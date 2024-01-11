@@ -3,6 +3,9 @@ import BoardModel from "../models/board";
 import { ExpressRequestInterface } from "../types/expressRequest.interface";
 import { Server } from "socket.io";
 import { Socket } from "../types/socket.interface";
+import { SocketEventsEnum } from "../types/socketEvents.enum";
+import { getErrorMessage } from "../helpers";
+import board from "../models/board";
 
 export const getBoards = async (
   req: ExpressRequestInterface,
@@ -72,4 +75,51 @@ export const leaveBoard = (
 ) => {
   console.log("server socket io leave", data.boardId);
   socket.leave(data.boardId);
+};
+
+export const updateBoard = async (
+  io: Server,
+  socket: Socket,
+  data: { boardId: string; fields: { title: string } }
+) => {
+  try {
+    if (!socket.user) {
+      socket.emit(
+        SocketEventsEnum.boardsUpdateFailure,
+        "User is not authorized"
+      );
+      return;
+    }
+    const updatedBoard = await BoardModel.findByIdAndUpdate(
+      data.boardId,
+      data.fields,
+      { new: true }
+    );
+    io.to(data.boardId).emit(
+      SocketEventsEnum.boardsUpdateSuccess,
+      updatedBoard
+    );
+  } catch (error) {
+    socket.emit(SocketEventsEnum.boardsUpdateFailure, getErrorMessage(error));
+  }
+};
+
+export const deleteBoard = async (
+  io: Server,
+  socket: Socket,
+  data: { boardId: string }
+) => {
+  try {
+    if (!socket.user) {
+      socket.emit(
+        SocketEventsEnum.boardsDeleteFailure,
+        "User is not authorized"
+      );
+      return;
+    }
+    await BoardModel.deleteOne({ _id: data.boardId });
+    io.to(data.boardId).emit(SocketEventsEnum.boardsDeleteSuccess);
+  } catch (error) {
+    socket.emit(SocketEventsEnum.boardsDeleteFailure, getErrorMessage(error));
+  }
 };

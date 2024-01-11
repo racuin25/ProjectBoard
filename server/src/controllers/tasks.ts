@@ -42,6 +42,7 @@ export const createTask = async (
       columnId: data.columnId,
     });
     const savedTask = await newTask.save();
+    console.log("savetask");
     io.to(data.boardId).emit(SocketEventsEnum.tasksCreateSuccess, savedTask);
   } catch (error) {
     socket.emit(SocketEventsEnum.tasksCreateFailure, getErrorMessage(error));
