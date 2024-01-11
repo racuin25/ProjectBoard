@@ -4,6 +4,10 @@ import { BoardComponent } from './components/board.component';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuardService } from '../auth/services/authGuard.service';
 import { BoardService } from './services/board.services';
+import { ColumnsService } from '../shared/services/columns.services';
+import { TopbarModule } from '../shared/modules/topbar/topbar.module';
+import { InlineFormModule } from '../shared/modules/inlineForm/inlineForm.module';
+import { TasksService } from '../shared/services/tasks.service';
 
 const routes: Routes = [
   {
@@ -14,8 +18,13 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [CommonModule, RouterModule.forChild(routes)],
+  imports: [
+    CommonModule,
+    RouterModule.forChild(routes),
+    TopbarModule,
+    InlineFormModule,
+  ],
   declarations: [BoardComponent],
-  providers: [BoardService],
+  providers: [BoardService, ColumnsService, TasksService],
 })
 export class BoardModule {}
