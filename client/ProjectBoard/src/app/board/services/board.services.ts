@@ -59,10 +59,33 @@ export class BoardService {
     this.columns$.next(updatedColumns);
   }
 
+  updateTask(updatedTask: TaskInterface): void {
+    const updatedTasks = this.task$.getValue().map((task) => {
+      if (task.id === updatedTask.id) {
+        return {
+          ...task,
+          title: updatedTask.title,
+          description: updatedTask.description,
+          columnId: updatedTask.columnId,
+        };
+      }
+      return task;
+    });
+
+    this.task$.next(updatedTasks);
+  }
+
   deleteColumn(columnId: string): void {
     const updatedColumns = this.columns$
       .getValue()
       .filter((column) => column.id !== columnId);
     this.columns$.next(updatedColumns);
+  }
+
+  deleteTask(taskId: string): void {
+    const updatedTasks = this.task$
+      .getValue()
+      .filter((task) => task.id !== taskId);
+    this.task$.next(updatedTasks);
   }
 }

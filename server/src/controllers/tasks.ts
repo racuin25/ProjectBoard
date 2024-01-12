@@ -48,3 +48,51 @@ export const createTask = async (
     socket.emit(SocketEventsEnum.tasksCreateFailure, getErrorMessage(error));
   }
 };
+
+export const updateTask = async (
+  io: Server,
+  socket: Socket,
+  data: {
+    boardId: string;
+    taskId: string;
+    fields: { title?: string; description?: string; columnId: string };
+  }
+) => {
+  try {
+    if (!socket.user) {
+      socket.emit(
+        SocketEventsEnum.tasksUpdateFailure,
+        "User is not authorized"
+      );
+      return;
+    }
+    const updatedTask = await TaskModel.findByIdAndUpdate(
+      data.taskId,
+      data.fields,
+      { new: true }
+    );
+    io.to(data.boardId).emit(SocketEventsEnum.tasksUpdateSuccess, updatedTask);
+  } catch (error) {
+    socket.emit(SocketEventsEnum.tasksUpdateFailure, getErrorMessage(error));
+  }
+};
+
+export const deleteTask = async (
+  io: Server,
+  socket: Socket,
+  data: { boardId: string; taskId: string }
+) => {
+  try {
+    if (!socket.user) {
+      socket.emit(
+        SocketEventsEnum.tasksDeleteFailure,
+        "User is not authorized"
+      );
+      return;
+    }
+    await TaskModel.deleteOne({ _id: data.taskId });
+    io.to(data.boardId).emit(SocketEventsEnum.tasksDeleteSuccess, data.taskId);
+  } catch (error) {
+    socket.emit(SocketEventsEnum.tasksDeleteFailure, getErrorMessage(error));
+  }
+};
